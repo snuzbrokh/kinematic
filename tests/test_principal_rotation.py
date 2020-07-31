@@ -6,7 +6,7 @@ from kin.principal_rotation import PrincipalRotation
 from kin.helpers import are_radians_close
 from .cfg import KNOWN_CASES_TOLERANCE, ALL_ANGLES
 
-non_singular_params = [(np.array([np.sin(a)*np.cos(b), np.sin(a)*np.sin(b), np.cos(a)]),
+non_singular_params = [([np.sin(a)*np.cos(b), np.sin(a)*np.sin(b), np.cos(a)],
                         angle)
                        for a in ALL_ANGLES
                        for b in ALL_ANGLES
@@ -14,7 +14,7 @@ non_singular_params = [(np.array([np.sin(a)*np.cos(b), np.sin(a)*np.sin(b), np.c
                        if not np.isclose(angle % np.pi, 0.0)]
 
 
-singluar_params = [(np.array([np.sin(a)*np.cos(b), np.sin(a)*np.sin(b), np.cos(a)]),
+singluar_params = [([np.sin(a)*np.cos(b), np.sin(a)*np.sin(b), np.cos(a)],
                     angle)
                    for a in ALL_ANGLES
                    for b in ALL_ANGLES
