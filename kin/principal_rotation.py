@@ -20,9 +20,9 @@ class PrincipalRotation:
         """
         self.angle = angle
         self.vector = e
-        self.dcm = None
-        self.B = None
-        self.invB = None
+        self._dcm = None
+        self._rotation_matrix = None
+        self._inverse_rotation_matrix = None
 
     @classmethod
     def from_dcm(cls, dcm):
@@ -49,33 +49,48 @@ class PrincipalRotation:
         rotation = cls(vector, angle)
         return rotation
 
-    def compute_dcm(self):
-        s = 1 - np.cos(self.angle)
-        self.dcm = np.array([
-            [
-                self.vector[0]**2*s + np.cos(self.angle),
-                self.vector[0]*self.vector[1]*s + self.vector[2]*np.sin(self.angle),
-                self.vector[0]*self.vector[2]*s - self.vector[1]*np.sin(self.angle)
-            ], [
-                self.vector[1]*self.vector[0]*s - self.vector[2]*np.sin(self.angle),
-                self.vector[1]**2*s + np.cos(self.angle),
-                self.vector[1]*self.vector[2]*s + self.vector[0]*np.sin(self.angle)
-            ], [
-                self.vector[2]*self.vector[0]*s + self.vector[1]*np.sin(self.angle),
-                self.vector[2]*self.vector[1]*s - self.vector[0]*np.sin(self.angle),
-                self.vector[2]**2*s + np.cos(self.angle)
-            ]
-        ])
+    @property
+    def dcm(self):
+        if self._dcm is None:
+            s = 1 - np.cos(self.angle)
+            self._dcm = np.array([
+                [
+                    self.vector[0]**2*s + np.cos(self.angle),
+                    self.vector[0]*self.vector[1]*s + self.vector[2]*np.sin(self.angle),
+                    self.vector[0]*self.vector[2]*s - self.vector[1]*np.sin(self.angle)
+                ], [
+                    self.vector[1]*self.vector[0]*s - self.vector[2]*np.sin(self.angle),
+                    self.vector[1]**2*s + np.cos(self.angle),
+                    self.vector[1]*self.vector[2]*s + self.vector[0]*np.sin(self.angle)
+                ], [
+                    self.vector[2]*self.vector[0]*s + self.vector[1]*np.sin(self.angle),
+                    self.vector[2]*self.vector[1]*s - self.vector[0]*np.sin(self.angle),
+                    self.vector[2]**2*s + np.cos(self.angle)
+                ]
+            ])
+        return self._dcm
 
-    def compute_B_matrix(self):
+    @property
+    def rotation_matrix(self):
         # TODO: This is not passing tests
-        gamma = self.vector*self.angle
-        tilde_gamma = tilde(gamma)
-        cot_half_gamma = np.tan(np.pi/2 - self.angle/2)
-        self.B = np.eye(3) + 0.5*tilde_gamma + \
-            (1/self.angle**2)*(1 - self.angle*0.5*cot_half_gamma)*tilde_gamma**2
-        self.invB = np.eye(3) - ((1-np.cos(self.angle))/self.angle**2)*tilde_gamma + \
-            ((self.angle - np.sin(self.angle))/self.angle**3)*tilde_gamma**2
+        if self._rotation_matrix is None:
+            gamma = self.vector*self.angle
+            tilde_gamma = tilde(gamma)
+            cot_half_gamma = np.tan(np.pi/2 - self.angle/2)
+            self._rotation_matrix = np.eye(3) + 0.5*tilde_gamma + \
+                (1/self.angle**2)*(1 - self.angle*0.5*cot_half_gamma)*tilde_gamma**2
+        return self._rotation_matrix
+
+    @property
+    def inverse_rotation_matrix(self):
+        # TODO: This is not passing tests
+        if self._inverse_rotation_matrix is None:
+            gamma = self.vector*self.angle
+            tilde_gamma = tilde(gamma)
+            self._inverse_rotation_matrix = np.eye(3) - \
+                ((1-np.cos(self.angle))/self.angle**2)*tilde_gamma + \
+                ((self.angle - np.sin(self.angle))/self.angle**3)*tilde_gamma**2
+        return self._inverse_rotation_matrix
 
     def as_quaternion(self):
         scalar = np.cos(0.5*self.angle)
