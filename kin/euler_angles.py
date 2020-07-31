@@ -57,165 +57,197 @@ class EulerAngles:
             raise NotImplementedError(
                 f"Euler angles with order {order} are not allowed")
         self.vector = np.array([r1, r2, r3])
-        self.dcm = None
-        self.B = None
-        self.invB = None
+        self._dcm = None
+        self._rotation_matrix = None
+        self._inverse_rotation_matrix = None
 
-    def compute_B_matrix(self):
-        s1 = np.sin(self.vector[0])
-        c1 = np.cos(self.vector[0])
-        s2 = np.sin(self.vector[1])
-        c2 = np.cos(self.vector[1])
-        s3 = np.sin(self.vector[2])
-        c3 = np.cos(self.vector[2])
-        if self.order == 'xyx':
-            self.B = 1/s2 * np.array([
-                [0, s3, c3],
-                [0, s2*c3, -s2*s3],
-                [s2, -c2*s3, -c2*c3]
-            ])
-            self.invB = np.array([
-                [c2, 0, 1],
-                [s2*s3, c3, 0],
-                [s2*c3, -s3, 0]
-            ])
-        elif self.order == 'xyz':
-            self.B = 1/c2 * np.array([
-                [c3, -s3, 0],
-                [c2*s3, c2*c3, 0],
-                [-s2*c3, s2*s3, c2]
-            ])
-            self.invB = np.array([
-                [c2*c3, s3, 0],
-                [-c2*s3, c3, 0],
-                [s2, 0, 1]
-            ])
-        elif self.order == 'xzx':
-            self.B = 1/s2 * np.array([
-                [0, -c3, s3],
-                [0, s2*s3, s2*c3],
-                [s2, c2*c3, -c2*s3]
-            ])
-            self.invB = np.array([
-                [c2, 0, 1],
-                [-s2*c3, s3, 0],
-                [s2*s3, c3, 0]
-            ])
-        elif self.order == 'xzy':
-            self.B = 1/c2 * np.array([
-                [c3, 0, s3],
-                [-c2*s3, 0, c2*c3],
-                [s2*c3, c2, s2*s3]
-            ])
-            self.invB = np.array([
-                [c2*c3, -s3, 0],
-                [-s2, 0, 1],
-                [c2*s3, c3, 0]
-            ])
-        elif self.order == 'yxy':
-            self.B = 1/s2 * np.array([
-                [s3, 0, -c3],
-                [s2*c3, 0, s2*s3],
-                [-c2*s3, s2, c2*c3]
-            ])
-            self.invB = np.array([
-                [s2*s3, c3, 0],
-                [c2, 0, 1],
-                [-s2*c3, s3, 0]
-            ])
-        elif self.order == 'yxz':
-            self.B = 1/c2 * np.array([
-                [s3, c3, 0],
-                [c2*c3, -c2*s3, 0],
-                [s2*s3, s2*c3, c2]
-            ])
-            self.invB = np.array([
-                [c2*s3, c3, 0],
-                [c2*c3, -s3, 0],
-                [-s2, 0, 1]
-            ])
-        elif self.order == 'yzx':
-            self.B = 1/c2 * np.array([
-                [0, c3, -s3],
-                [0, c2*s3, c2*c3],
-                [c2, -s2*c3, s2*s3]
-            ])
-            self.invB = np.array([
-                [s2, 0, 1],
-                [c2*c3, s3, 0],
-                [-c2*s3, c3, 0]
-            ])
-        elif self.order == 'yzy':
-            self.B = 1/s2 * np.array([
-                [c3, 0, s3],
-                [-s2*s3, 0, s2*c3],
-                [-c2*c3, s2, -c2*s3]
-            ])
-            self.invB = np.array([
-                [s2*c3, -s3, 0],
-                [c2, 0, 1],
-                [s2*s3, c3, 0]
-            ])
-        elif self.order == 'zxy':
-            self.B = 1/c2 * np.array([
-                [-s3, 0, c3],
-                [c2*c3, 0, c2*s3],
-                [s2*s3, c2, -s2*c3]
-            ])
-            self.invB = np.array([
-                [-c2*s3, c3, 0],
-                [s2, 0, 1],
-                [c2*c3, s3, 0]
-            ])
-        elif self.order == 'zxz':
-            self.B = 1/s2 * np.array([
-                [s3, c3, 0],
-                [s2*c3, -s2*s3, 0],
-                [-c2*s3, -c2*c3, s2]
-            ])
-            self.invB = np.array([
-                [s3*s2, c3, 0],
-                [s2*c3, -s3, 0],
-                [c2, 0, 1]
-            ])
-        elif self.order == 'zyx':
-            self.B = 1/c2 * np.array([
-                [0, s3, c3],
-                [0, c2*c3, -c2*s3],
-                [c2, s2*s3, s2*c3]
-            ])
-            self.invB = np.array([
-                [-s2, 0, 1],
-                [c2*s3, c3, 0],
-                [c2*c3, -s3, 0]
-            ])
-        else:
-            # This ends to be zyz order
-            self.B = 1/s2 * np.array([
-                [-c3, s3, 0],
-                [s2*s3, s2*c3, 0],
-                [c2*c3, -c2*s3, s2]
-            ])
-            self.invB = np.array([
-                [-s2*c3, s3, 0],
-                [s2*s3, c3, 0],
-                [c2, 0, 1]
-            ])
+    @property
+    def inverse_rotation_matrix(self):
+        if self._inverse_rotation_matrix is None:
+            s1 = np.sin(self.vector[0])
+            c1 = np.cos(self.vector[0])
+            s2 = np.sin(self.vector[1])
+            c2 = np.cos(self.vector[1])
+            s3 = np.sin(self.vector[2])
+            c3 = np.cos(self.vector[2])
+            if self.order == 'xyx':
+                irotation_matrix = np.array([
+                    [c2, 0, 1],
+                    [s2*s3, c3, 0],
+                    [s2*c3, -s3, 0]
+                ])
+            elif self.order == 'xyz':
+                irotation_matrix = np.array([
+                    [c2*c3, s3, 0],
+                    [-c2*s3, c3, 0],
+                    [s2, 0, 1]
+                ])
+            elif self.order == 'xzx':
+                irotation_matrix = np.array([
+                    [c2, 0, 1],
+                    [-s2*c3, s3, 0],
+                    [s2*s3, c3, 0]
+                ])
+            elif self.order == 'xzy':
+                irotation_matrix = np.array([
+                    [c2*c3, -s3, 0],
+                    [-s2, 0, 1],
+                    [c2*s3, c3, 0]
+                ])
+            elif self.order == 'yxy':
+                irotation_matrix = np.array([
+                    [s2*s3, c3, 0],
+                    [c2, 0, 1],
+                    [-s2*c3, s3, 0]
+                ])
+            elif self.order == 'yxz':
+                irotation_matrix = np.array([
+                    [c2*s3, c3, 0],
+                    [c2*c3, -s3, 0],
+                    [-s2, 0, 1]
+                ])
+            elif self.order == 'yzx':
+                irotation_matrix = np.array([
+                    [s2, 0, 1],
+                    [c2*c3, s3, 0],
+                    [-c2*s3, c3, 0]
+                ])
+            elif self.order == 'yzy':
+                irotation_matrix = np.array([
+                    [s2*c3, -s3, 0],
+                    [c2, 0, 1],
+                    [s2*s3, c3, 0]
+                ])
+            elif self.order == 'zxy':
+                irotation_matrix = np.array([
+                    [-c2*s3, c3, 0],
+                    [s2, 0, 1],
+                    [c2*c3, s3, 0]
+                ])
+            elif self.order == 'zxz':
+                irotation_matrix = np.array([
+                    [s3*s2, c3, 0],
+                    [s2*c3, -s3, 0],
+                    [c2, 0, 1]
+                ])
+            elif self.order == 'zyx':
+                irotation_matrix = np.array([
+                    [-s2, 0, 1],
+                    [c2*s3, c3, 0],
+                    [c2*c3, -s3, 0]
+                ])
+            else:
+                # This ends to be zyz order
+                irotation_matrix = np.array([
+                    [-s2*c3, s3, 0],
+                    [s2*s3, c3, 0],
+                    [c2, 0, 1]
+                ])
+            self._inverse_rotation_matrix = irotation_matrix
+        return self._inverse_rotation_matrix
+
+    @property
+    def rotation_matrix(self):
+        if self._rotation_matrix is None:
+            s1 = np.sin(self.vector[0])
+            c1 = np.cos(self.vector[0])
+            s2 = np.sin(self.vector[1])
+            c2 = np.cos(self.vector[1])
+            s3 = np.sin(self.vector[2])
+            c3 = np.cos(self.vector[2])
+            if self.order == 'xyx':
+                rotation_matrix = 1/s2 * np.array([
+                    [0, s3, c3],
+                    [0, s2*c3, -s2*s3],
+                    [s2, -c2*s3, -c2*c3]
+                ])
+            elif self.order == 'xyz':
+                rotation_matrix = 1/c2 * np.array([
+                    [c3, -s3, 0],
+                    [c2*s3, c2*c3, 0],
+                    [-s2*c3, s2*s3, c2]
+                ])
+            elif self.order == 'xzx':
+                rotation_matrix = 1/s2 * np.array([
+                    [0, -c3, s3],
+                    [0, s2*s3, s2*c3],
+                    [s2, c2*c3, -c2*s3]
+                ])
+            elif self.order == 'xzy':
+                rotation_matrix = 1/c2 * np.array([
+                    [c3, 0, s3],
+                    [-c2*s3, 0, c2*c3],
+                    [s2*c3, c2, s2*s3]
+                ])
+            elif self.order == 'yxy':
+                rotation_matrix = 1/s2 * np.array([
+                    [s3, 0, -c3],
+                    [s2*c3, 0, s2*s3],
+                    [-c2*s3, s2, c2*c3]
+                ])
+            elif self.order == 'yxz':
+                rotation_matrix = 1/c2 * np.array([
+                    [s3, c3, 0],
+                    [c2*c3, -c2*s3, 0],
+                    [s2*s3, s2*c3, c2]
+                ])
+            elif self.order == 'yzx':
+                rotation_matrix = 1/c2 * np.array([
+                    [0, c3, -s3],
+                    [0, c2*s3, c2*c3],
+                    [c2, -s2*c3, s2*s3]
+                ])
+            elif self.order == 'yzy':
+                rotation_matrix = 1/s2 * np.array([
+                    [c3, 0, s3],
+                    [-s2*s3, 0, s2*c3],
+                    [-c2*c3, s2, -c2*s3]
+                ])
+            elif self.order == 'zxy':
+                rotation_matrix = 1/c2 * np.array([
+                    [-s3, 0, c3],
+                    [c2*c3, 0, c2*s3],
+                    [s2*s3, c2, -s2*c3]
+                ])
+            elif self.order == 'zxz':
+                rotation_matrix = 1/s2 * np.array([
+                    [s3, c3, 0],
+                    [s2*c3, -s2*s3, 0],
+                    [-c2*s3, -c2*c3, s2]
+                ])
+            elif self.order == 'zyx':
+                rotation_matrix = 1/c2 * np.array([
+                    [0, s3, c3],
+                    [0, c2*c3, -c2*s3],
+                    [c2, s2*s3, s2*c3]
+                ])
+            else:
+                # This ends to be zyz order
+                rotation_matrix = 1/s2 * np.array([
+                    [-c3, s3, 0],
+                    [s2*s3, s2*c3, 0],
+                    [c2*c3, -c2*s3, s2]
+                ])
+            self._rotation_matrix = rotation_matrix
+        return self._rotation_matrix
 
     @staticmethod
     def is_order_symmetric(order):
         return order == order[::-1]
 
-    def compute_dcm(self):
+    @property
+    def dcm(self):
         """
         Compute the Direction Cosine Matrix from the euler angles.
         The method used is concatenate single axis rotations instead of direct formula.
         TODO: Compute benchmarks of concatenate single axis Vs direct formulas
         """
-        dcm = np.identity(3)
-        for axis, ang in zip(reversed(self.order), reversed(self.vector)):
-            dcm = dcm @ self._single_axis_rotations[axis](ang)
-        self.dcm = dcm
+        if self._dcm is None:
+            dcm = np.identity(3)
+            for axis, ang in zip(reversed(self.order), reversed(self.vector)):
+                dcm = dcm @ self._single_axis_rotations[axis](ang)
+            self._dcm = dcm
+        return self._dcm
 
     @classmethod
     def from_dcm(cls, dcm, order='zyx'):
