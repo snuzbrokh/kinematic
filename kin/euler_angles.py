@@ -1,7 +1,3 @@
-import numpy as np
-
-
-## Euler Angles
 """
 Euler angles to single axis rotation matrices.
 
@@ -9,6 +5,10 @@ The mX notation came from the order of rotations in the
 Euler angle definitions. m1 represent the Direction Cosine Matrix
 rotation along the ex 1, and so on.
 """
+import numpy as np
+
+from .helpers import simplify_radians
+
 
 def _dcm_from_x_axis_rotation(ang):
     return np.array([
@@ -56,7 +56,7 @@ class EulerAngles:
         if order not in self.allowed_orders:
             raise NotImplementedError(
                 f"Euler angles with order {order} are not allowed")
-        self.vector = np.array([r1, r2, r3])
+        self.vector = simplify_radians(np.array([r1, r2, r3]))
         self._dcm = None
         self._rotation_matrix = None
         self._inverse_rotation_matrix = None

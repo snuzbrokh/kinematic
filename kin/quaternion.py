@@ -1,5 +1,6 @@
 import numpy as np
 import kin.principal_rotation
+import kin.crp
 
 
 class Quaternion:
@@ -114,11 +115,20 @@ class Quaternion:
     def as_principal_rotation(self):
         angle = np.arccos(self.vector[0])*2
         if np.isclose(angle, 0.0) or np.isclose(angle, np.pi*2):
-            raise ValueError("Impossible to compute principal rotation vector for " + \
-                             "a zero rotation")
+            raise ValueError("Is not possible to compute principal rotation vector " + \
+                             "for a zero rotation")
         s_half_angle = np.sin(angle*0.5)
         vector = self.vector[1:]/s_half_angle
         return kin.principal_rotation.PrincipalRotation(vector, angle)
+
+    def as_crp(self):
+        if np.isclose(self.vector[0], 1):
+            raise ValueError("Can not compute classical Rodirgues parametters from" + \
+                             f"a zero rotation: quaternion={self}")
+        if np.isclose(self.vector[0], 0.0):
+            raise ValueError("Classical Rodirgues parametters goes singular for " + \
+                             f"±180º rotations: quaternion={self}")
+        return kin.crp.CRP(*(self.vector[1:]/self.vector[0]))
 
     @classmethod
     def from_dcm(cls, dcm):

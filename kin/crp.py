@@ -1,5 +1,8 @@
 import numpy as np
-from .quaternion import Quaterenion
+
+from kin.quaternion import Quaternion
+from kin.principal_rotation import PrincipalRotation
+
 from .helpers import tilde
 
 
@@ -7,26 +10,41 @@ class CRP:
 
     def __init__(self, q1, q2, q3):
         self.vector = np.array([q1, q2, q3])
-        self.dcm = None
-        self.B = None
-        self.invB = None
+        self._dcm = None
+        self._rotation_matrix = None
+        self._inverse_rotation_matrix = None
 
-    def _reset_matrices(self):
-        self.dcm = None
-        self.B = None
-        self.invB = None
+    @property
+    def dcm(self):
+        if self._dcm is None:
+            q2 = self.vector @ self.vector
+            self._dcm = ((1-q2)*np.eye(3) + 2*np.outer(self.vector, self.vector) - \
+                         2*tilde(self.vector))/(1 + q2)
+        return self._dcm
 
-    def compute_dcm(self):
-        crp2 = np.transpose(self.vector) @ self.vector
-        return ((1 - crp2)*np.eye(3) + 2*crp2 - 2*tilde[self.vector]) / (1 + crp2)
+    @property
+    def rotation_matrix(self):
+        if self._rotation_matrix is None:
+            self._rotation_matrix = 0.5*(np.eye(3) + tilde(self.vector) + \
+                                         np.outer(self.vector, self.vector))
+        return self._rotation_matrix
 
-    def compute_B_matrix(self):
-        raise NotImplementedError("B matrix not implemented for " + \
-                                  "Classic Rodrigues Parametters")
+    @property
+    def inverse_rotation_matrix(self):
+        if self._inverse_rotation_matrix is None:
+            self._inverse_rotation_matrix = 2*(np.eye(3) - tilde(self.vector)) \
+                /(1 + self.vector @ self.vector)
+        return self._inverse_rotation_matrix
 
     def as_quaternion(self):
         q0 = 1 / np.sqrt(1 + np.transpose(self.vector) @ self.vector)
-        return Quaterenion(q0, *(self.vector*q0))
+        return Quaternion(q0, *(self.vector*q0))
+
+    def as_principal_rotation(self):
+        norm = np.linalg.norm(self.vector)
+        angle = np.arctan(norm)*2
+        vector = self.vector/norm
+        return PrincipalRotation(vector, angle)
 
     def add(self, q):
         """
@@ -34,17 +52,15 @@ class CRP:
         """
         q_cross = np.cross(self.vector, q.vector)
         q_dot = self.vector @ q.vector
-        self.vector = (self.vector + q.vector - q_cross) / (1 - q_dot)
-        self._reset_matrices()
+        return CRP(*((self.vector + q.vector - q_cross) / (1 - q_dot)))
 
-    def subtracts(self, q):
+    def subtract(self, q):
         """
         Subtracts two sets of Classic Rodirgues Parametters
         """
         q_cross = np.cross(self.vector, q.vector)
         q_dot = self.vector @ q.vector
-        self.vector = (self.vector - q.vector + q_cross) / (1 + q_dot)
-        self._reset_matrices()
+        return CRP(*((self.vector - q.vector + q_cross) / (1 + q_dot)))
 
     @classmethod
     def from_dcm(cls, dcm):
@@ -60,8 +76,25 @@ class CRP:
             raise ValueError()
         return cls(*(np.tan(pr.angle)*pr.vector))
 
-    @classmethod
-    def from_quaternion(cls, quaternion):
-        if np.isclose(quaternion.vector[0], 0.0):
-            raise ValueError()
-        return cls(*(quaternion.vector[1:]/quaternion.vector[0]))
+    def __add__(self, o):
+        """
+        Implements classical Rodrigues parametters direct addition. This is faster than
+        the `CRP.add` method but is not that precise for long rotation as is the
+        linearized version of CRP addition.
+        """
+        if not isinstance(o, CRP):
+            raise ValueError(f"Can not add CRP and {o}")
+        return CRP(*(self.vector + o.vector))
+
+    def __sub__(self, o):
+        """
+        Implements classical Rodrigues parametters direct subtraction. This is faster than
+        the `CRP.subtract` method but is not that precise for long rotation as is the
+        linearized version of CRP subtraction.
+        """
+        if not isinstance(o, CRP):
+            raise ValueError(f"Can not subtract CRP and {o}")
+        return CRP(*(self.vector - o.vector))
+
+    def __repr__(self):
+        return f"CRP<{self.vector}>"

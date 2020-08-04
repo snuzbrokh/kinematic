@@ -6,7 +6,7 @@ TODO: fix citation [1](HS)
 """
 
 import numpy as np
-from kin.helpers import tilde
+from kin.helpers import tilde, simplify_radians
 import kin.quaternion
 
 
@@ -18,7 +18,7 @@ class PrincipalRotation:
             Must be unique length to be valid
         :param angle: Principal rotation angle in radians
         """
-        self.angle = angle
+        self.angle = simplify_radians(angle)
         self.vector = e
         self._dcm = None
         self._rotation_matrix = None
@@ -98,6 +98,18 @@ class PrincipalRotation:
         vector = self.vector*s_half_angle
         return kin.quaternion.Quaternion(scalar, *vector)
 
+    def as_crp(self):
+        if np.isclose(self.angle, 0.0):
+            raise ValueError("Can not compute classical Rodirgues parametters from " + \
+                             f"a zero rotation: pr_vector={self.vector}, " + \
+                             f"pr_angle={self.angle}")
+
+        if np.isclose(np.abs(self.angle), np.pi):
+            raise ValueError("Classical Rodirgues parametters goes singular for " + \
+                             f"±180º rotations: pr_vector={self.vector}, " + \
+                             f"pr_angle={self.angle}")
+        return kin.crp.CRP(*(np.tan(self.angle/2)*self.vector))
+
     def __eq__(self, o):
         if not isinstance(o, PrincipalRotation):
             return False
@@ -117,6 +129,6 @@ class PrincipalRotation:
         return False
 
     def __repr__(self):
-        return f"angle={self.angle}, vector={self.vector}"
+        return f"PrincipalRotation<angle={self.angle}, vector={self.vector}>"
 
 
