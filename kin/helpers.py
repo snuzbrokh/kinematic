@@ -11,4 +11,4 @@ def tilde(x):
 def are_radians_close(a, b, tolerance=10e+7):
     return abs(a % np.pi - b % np.pi)/np.pi <= tolerance
 
-simplify_radians = lambda x: (x % (np.pi*2))*np.sign(x)
+round_radians = lambda x: x % (np.pi*2)

@@ -2,8 +2,10 @@ import math
 import numpy as np
 
 import pytest
-from kin.euler_angles import EulerAngles
-from kin.helpers import are_radians_close
+from kin import EulerAngles
+
+from kin import PrincipalRotation
+from kin.helpers import round_radians
 from .cfg import KNOWN_CASES_TOLERANCE, ALL_ANGLES
 
 
@@ -14,18 +16,22 @@ from .cfg import KNOWN_CASES_TOLERANCE, ALL_ANGLES
 non_singular_params = [([r1, r2, r3], order) for r1 in ALL_ANGLES
                        for r2 in ALL_ANGLES
                        for r3 in ALL_ANGLES
-                       for order in EulerAngles.allowed_orders[9:11]
-                       if (order[0] != order[-1] and not np.isclose(np.abs(r2), np.pi/2))
+                       for order in EulerAngles.allowed_orders[10:11]
+                       if sum([r1, r2, r3]) and ((order[0] != order[-1] and \
+                           not np.isclose(np.abs(round_radians(r2)), np.pi/2))
                        or (order[0] == order[-1] and \
-                           not np.isclose(r2, 0.0) and not np.isclose(r2, np.pi))]
+                           not np.isclose(round_radians(r2), 0.0) and \
+                           not np.isclose(round_radians(r2), np.pi)))]
 
 singular_params = [([r1, r2, r3], order) for r1 in ALL_ANGLES
                    for r2 in ALL_ANGLES
                    for r3 in ALL_ANGLES
-                   for order in EulerAngles.allowed_orders[9:11]
-                   if (order[0] != order[-1] and np.isclose(np.abs(r2), np.pi/2))
-                   or (order[0] == order[-1] and
-                       (np.isclose(r2, 0.0) or np.isclose(r2, np.pi)))]
+                   for order in EulerAngles.allowed_orders[10:11]
+                   if (order[0] != order[-1] and \
+                       np.isclose(np.abs(round_radians(r2)), np.pi/2))
+                   or (order[0] == order[-1] and (
+                       np.isclose(round_radians(r2), 0.0) or \
+                       np.isclose(round_radians(r2), np.pi)))]
 
 
 @pytest.mark.parametrize('angles,order', non_singular_params)
@@ -39,6 +45,7 @@ def test_dcm_conversion(angles, order):
     euler_2 = EulerAngles.from_dcm(euler_1.dcm, order)
 
     assert np.isclose(np.transpose(euler_1.dcm) @ euler_2.dcm, np.eye(3)).all()
+
 
 @pytest.mark.parametrize('angles,order', singular_params)
 def test_singular_dcm_conversion(angles, order):

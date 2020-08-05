@@ -7,7 +7,7 @@ rotation along the ex 1, and so on.
 """
 import numpy as np
 
-from .helpers import simplify_radians
+from .helpers import round_radians
 
 
 def _dcm_from_x_axis_rotation(ang):
@@ -56,7 +56,7 @@ class EulerAngles:
         if order not in self.allowed_orders:
             raise NotImplementedError(
                 f"Euler angles with order {order} are not allowed")
-        self.vector = simplify_radians(np.array([r1, r2, r3]))
+        self.vector = round_radians(np.array([r1, r2, r3]))
         self._dcm = None
         self._rotation_matrix = None
         self._inverse_rotation_matrix = None
@@ -299,7 +299,7 @@ class EulerAngles:
             r1 = np.arctan(dcm[2][0]/(-dcm[2][1]))
             r3 = np.arctan(dcm[0][2]/dcm[1][2])
         elif order == 'zyx':
-            r2 = np.arcsin(-dcm[0][2])
+            r2 = -np.arcsin(dcm[0][2])
             r1 = np.arctan(dcm[0][1]/dcm[0][0])
             r3 = np.arctan(dcm[1][2]/dcm[2][2])
         else:

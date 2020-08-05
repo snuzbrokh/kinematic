@@ -6,7 +6,7 @@ TODO: fix citation [1](HS)
 """
 
 import numpy as np
-from kin.helpers import tilde, simplify_radians
+from kin.helpers import tilde, round_radians
 import kin.quaternion
 
 
@@ -18,7 +18,7 @@ class PrincipalRotation:
             Must be unique length to be valid
         :param angle: Principal rotation angle in radians
         """
-        self.angle = simplify_radians(angle)
+        self.angle = round_radians(angle)
         self.vector = e
         self._dcm = None
         self._rotation_matrix = None
@@ -37,9 +37,9 @@ class PrincipalRotation:
         # always return the short rotation for the angle
         angle = np.arccos(0.5*(dcm[0][0]+dcm[1][1]+dcm[2][2]-1))
 
-        if np.isnan(angle) or np.isclose(angle % np.pi, np.pi) or np.isclose(angle % np.pi, 0.0):
-            raise ValueError(f"Mapping from DCM to Principal Rotation is not " + \
-                             "uniquely defined for a rotation angle of {angle}.")
+        if np.isnan(angle) or np.isclose(angle, np.pi) or np.isclose(angle, 0.0):
+            raise ValueError("Mapping from DCM to Principal Rotation is not " + \
+                             f"uniquely defined for a rotation angle of {angle}.")
 
         vector = np.array([
             dcm[1][2]-dcm[2][1],
