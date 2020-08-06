@@ -8,6 +8,7 @@ TODO: fix citation [1](HS)
 import numpy as np
 from kin.helpers import tilde, round_radians
 import kin.quaternion
+import kin.mrp
 
 
 class PrincipalRotation:
@@ -109,6 +110,9 @@ class PrincipalRotation:
                              f"±180º rotations: pr_vector={self.vector}, " + \
                              f"pr_angle={self.angle}")
         return kin.crp.CRP(*(np.tan(self.angle/2)*self.vector))
+
+    def as_mrp(self):
+        return kin.mrp.MRP(*(np.tan(self.angle/4)*self.vector))
 
     def __eq__(self, o):
         if not isinstance(o, PrincipalRotation):

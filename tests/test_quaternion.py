@@ -115,10 +115,14 @@ def test_addition_subtraction(vector1, vector2):
 
     #Addition matrix must be orthogonal
 
-    assert np.isclose(np.transpose(q1.addition_matrix) @ q1.addition_matrix, np.eye(4)).all()
-    assert np.isclose(np.transpose(q2.addition_matrix) @ q2.addition_matrix, np.eye(4)).all()
-    assert np.isclose(np.transpose(q3.addition_matrix) @ q3.addition_matrix, np.eye(4)).all()
-    assert np.isclose(np.transpose(q4.addition_matrix) @ q4.addition_matrix, np.eye(4)).all()
+    assert np.isclose(np.transpose(q1.addition_matrix) @ \
+                      q1.addition_matrix, np.eye(4)).all()
+    assert np.isclose(np.transpose(q2.addition_matrix) @ \
+                      q2.addition_matrix, np.eye(4)).all()
+    assert np.isclose(np.transpose(q3.addition_matrix) @ \
+                      q3.addition_matrix, np.eye(4)).all()
+    assert np.isclose(np.transpose(q4.addition_matrix) @ \
+                      q4.addition_matrix, np.eye(4)).all()
 
     # Principal rotation and quaternion DCMs must be the same
     if np.isclose(np.transpose(q1.dcm) @ q4.dcm, np.eye(3)).all():

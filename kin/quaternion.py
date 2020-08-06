@@ -1,6 +1,7 @@
 import numpy as np
 import kin.principal_rotation
 import kin.crp
+import kin.mrp
 
 
 class Quaternion:
@@ -129,6 +130,12 @@ class Quaternion:
             raise ValueError("Classical Rodirgues parametters goes singular for " + \
                              f"±180º rotations: quaternion={self}")
         return kin.crp.CRP(*(self.vector[1:]/self.vector[0]))
+
+    def as_mrp(self):
+        """
+        Returns a set of Modified Rodirgues Parametters from a set of Euler Parametters
+        """
+        return kin.mrp.MRP(*(self.vector[1:] / (1 + self.vector[0])))
 
     @classmethod
     def from_dcm(cls, dcm):
