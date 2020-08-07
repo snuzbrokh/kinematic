@@ -34,12 +34,10 @@ def test_dcm_conversion(vector):
     pr2 = q2.as_principal_rotation()
 
     # Principal rotation and quaternion DCMs must be the same
-    if np.isclose(np.transpose(q1.dcm) @ q2.dcm, np.eye(3)).all():
-        assert pr1 == pr2
-    else:
-        assert np.isclose(pr1.angle, pr2.angle)
+    if np.isclose(np.trace(q1.dcm), -1):
         assert np.isclose(q1.dcm @ q2.dcm, np.eye(3)).all()
-        assert (pr1.vector == pr2.vector).all()
+    else:
+        assert np.isclose(np.transpose(q1.dcm) @ q2.dcm, np.eye(3)).all()
         assert pr1 == pr2
 
 
