@@ -2,7 +2,7 @@ import numpy as np
 
 import pytest
 from kin.crp import CRP
-from kin.helpers import simplify_radians
+from kin.helpers import round_radians
 from kin.principal_rotation import PrincipalRotation
 from kin.quaternion import Quaternion
 
@@ -12,15 +12,15 @@ non_singular_params = [([np.sin(a)*np.cos(b), np.sin(a)*np.sin(b), np.cos(a)], a
                        for a in ALL_ANGLES
                        for b in ALL_ANGLES
                        for angle in ALL_ANGLES
-                       if not np.isclose(np.abs(simplify_radians(angle)), np.pi) and \
-                       simplify_radians(angle)]
+                       if not np.isclose(np.abs(round_radians(angle)), np.pi) and \
+                       round_radians(angle)]
 
 singular_params = [([np.sin(a)*np.cos(b), np.sin(a)*np.sin(b), np.cos(a)], angle)
                    for a in ALL_ANGLES
                    for b in ALL_ANGLES
                    for angle in ALL_ANGLES
-                   if np.isclose(np.abs(simplify_radians(angle)), np.pi) or \
-                   not simplify_radians(angle)]
+                   if np.isclose(np.abs(round_radians(angle)), np.pi) or \
+                   not round_radians(angle)]
 
 
 @pytest.mark.parametrize('vector,angle', non_singular_params)

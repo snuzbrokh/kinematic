@@ -44,7 +44,10 @@ def test_dcm_conversion(angles, order):
     euler_1 = EulerAngles(*angles, order)
     euler_2 = EulerAngles.from_dcm(euler_1.dcm, order)
 
-    assert np.isclose(np.transpose(euler_1.dcm) @ euler_2.dcm, np.eye(3)).all()
+    if np.isclose(np.trace(euler_1.dcm), -1):
+        assert np.isclose(euler_1.dcm @ euler_2.dcm, np.eye(3)).all()
+    else:
+        assert np.isclose(np.transpose(euler_1.dcm) @ euler_2.dcm, np.eye(3)).all()
 
 
 @pytest.mark.parametrize('angles,order', singular_params)

@@ -28,8 +28,8 @@ def test_dcm_conversion(vector, angle):
     Test the conversion from principal rotation to DCM and vice-versa.
     The conversion is tested for non-singular cases.
     Thus this test case alwsays test for `angle % np.pi` is different than zero
-    """
-    r1 = PrincipalRotation(vector, angle)
+    """?!?jedi=0, ?!?                   (*_*e*_*, angle) ?!?jedi?!?
+    r1 = PrincipalRotation(np.array(vector), angle)
     r2 = PrincipalRotation.from_dcm(r1.dcm)
 
     # If the determinant of cross product between matrices is 0, both DCMs are equal
@@ -50,7 +50,7 @@ def test_singular_dcm_conversion(vector, angle):
     If a principal rotation is computed from this dcm, the angle will be zero
     and the vector will have NaN or infinity components.
     """
-    r1 = PrincipalRotation(vector, angle)
+    r1 = PrincipalRotation(np.array(vector), angle)
     with pytest.raises(ValueError):
         r2 = PrincipalRotation.from_dcm(r1.dcm)
 
@@ -60,7 +60,7 @@ def test_rotation_matrices(vector, angle):
     """
     Test that $[B] . [B]^{-1} = [I_{3 \times 3}]$
     """
-    rotation = PrincipalRotation(vector, angle)
+    rotation = PrincipalRotation(np.array(vector), angle)
     # if the determinant is close to 1.0 the test passes
     assert np.isclose(rotation.inverse_rotation_matrix @ rotation.rotation_matrix,
                       np.eye(3)).all()
@@ -71,6 +71,6 @@ def test_singular_rotation_matrices(vector, angle):
     """
     Test that singular angles return a B matrix with some infinity values
     """
-    rotation = PrincipalRotation(vector, angle)
+    rotation = PrincipalRotation(np.array(vector), angle)
     # if `(angle % np.pi) == 0` the B matrix will contain some values as np.Inf
     assert (rotation.rotation_matrix == np.Inf).any()
