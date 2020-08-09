@@ -164,7 +164,6 @@ class Quaternion:
                 q0 = 0.25*(dcm[0][1] - dcm[1][0]) / q3
                 q1 = 0.25*(dcm[2][0] + dcm[0][2]) / q3
                 q2 = 0.25*(dcm[1][2] + dcm[2][1]) / q3
-            print(scores.index(q))
         else:
             # q0 will not be complex or 0 as trace is not close to -1
             q0 = np.sqrt(0.25 * (1 + trace))
@@ -173,7 +172,6 @@ class Quaternion:
             q3 = 0.25*(dcm[0][1] - dcm[1][0]) / q0
         quaternion = cls(q0, q1, q2, q3)
 
-        print(quaternion.as_principal_rotation())
         return quaternion
 
     def __repr__(self):

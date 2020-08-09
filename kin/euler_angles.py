@@ -254,59 +254,8 @@ class EulerAngles:
         """
         Compute euler angles from a Direction Cosine Matrix
         """
-        order = order.lower()
-        if order not in cls.allowed_orders:
-            raise NotImplementedError(
-                f"Euler angles with order {order} are not allowed")
-        if order == 'xyx':
-            r2 = np.arccos(dcm[0][0])
-            r1 = np.arctan(-dcm[0][1]/dcm[0][2])
-            r3 = np.arctan(dcm[1][0]/dcm[2][0])
-        elif order == 'xyz':
-            r2 = np.arcsin(dcm[2][0])
-            r1 = np.arctan(-dcm[2][1]/dcm[2][2])
-            r3 = np.arctan(-dcm[1][0]/dcm[0][0])
-        elif order == 'xzx':
-            r2 = np.arccos(dcm[0][0])
-            r1 = np.arctan(dcm[0][2]/dcm[0][1])
-            r3 = np.arctan(dcm[2][0]/(-dcm[1][0]))
-        elif order == 'xzy':
-            r2 = np.arcsin(-dcm[1][0])
-            r1 = np.arctan(dcm[1][2]/dcm[1][1])
-            r3 = np.arctan(dcm[2][0]/dcm[0][0])
-        elif order == 'yxy':
-            r2 = np.arccos(dcm[1][1])
-            r1 = np.arctan(dcm[1][0]/dcm[1][2])
-            r3 = np.arctan(dcm[0][1]/(-dcm[2][1]))
-        elif order == 'yxz':
-            r2 = np.arcsin(-dcm[1][2])
-            r1 = np.arctan(dcm[2][0]/dcm[2][2])
-            r3 = np.arctan(dcm[0][1]/dcm[1][1])
-        elif order == 'yzx':
-            r2 = np.arcsin(dcm[0][1])
-            r1 = np.arctan(-dcm[0][2]/dcm[0][0])
-            r3 = np.arctan(-dcm[2][1]/dcm[1][1])
-        elif order == 'yzy':
-            r2 = np.arccos(dcm[1][1])
-            r1 = np.arctan(-dcm[1][2]/dcm[1][0])
-            r3 = np.arctan(dcm[2][1]/dcm[0][1])
-        elif order == 'zxy':
-            r2 = np.arcsin(dcm[1][2])
-            r1 = np.arctan(-dcm[1][0]/dcm[1][1])
-            r3 = np.arctan(-dcm[0][2]/dcm[2][2])
-        elif order == 'zxz':
-            r2 = np.arccos(dcm[2][2])
-            r1 = np.arctan(dcm[2][0]/(-dcm[2][1]))
-            r3 = np.arctan(dcm[0][2]/dcm[1][2])
-        elif order == 'zyx':
-            r2 = -np.arcsin(dcm[0][2])
-            r1 = np.arctan(dcm[0][1]/dcm[0][0])
-            r3 = np.arctan(dcm[1][2]/dcm[2][2])
-        else:
-            # This is from wikipedia: https://en.wikipedia.org/wiki/Euler_angles
-            # This ends to be zyz order
-            r2 = np.arccos(dcm[2][2])
-            r1 = np.arctan(dcm[1][2]/dcm[0][2])
-            r3 = np.arctan(dcm[2][1]/(-dcm[2][0]))
-        euler = cls(r1, r2, r3, order)
-        return euler
+        raise NotImplementedError("Method not implemented for `EulerAngle` class." + \
+                                  " Wait for issue #1")
+
+    def __repr__(self):
+        return f"EulerAngles<{self.order}, {self.vector}>"

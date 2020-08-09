@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 from kin.principal_rotation import PrincipalRotation
 from kin.helpers import are_radians_close
-from .cfg import KNOWN_CASES_TOLERANCE, ALL_ANGLES
+from .cfg import ALL_ANGLES
 
 non_singular_params = [([np.sin(a)*np.cos(b), np.sin(a)*np.sin(b), np.cos(a)],
                         angle)
@@ -28,7 +28,7 @@ def test_dcm_conversion(vector, angle):
     Test the conversion from principal rotation to DCM and vice-versa.
     The conversion is tested for non-singular cases.
     Thus this test case alwsays test for `angle % np.pi` is different than zero
-    """?!?jedi=0, ?!?                   (*_*e*_*, angle) ?!?jedi?!?
+    """
     r1 = PrincipalRotation(np.array(vector), angle)
     r2 = PrincipalRotation.from_dcm(r1.dcm)
 
@@ -53,24 +53,3 @@ def test_singular_dcm_conversion(vector, angle):
     r1 = PrincipalRotation(np.array(vector), angle)
     with pytest.raises(ValueError):
         r2 = PrincipalRotation.from_dcm(r1.dcm)
-
-
-@pytest.mark.parametrize('vector,angle', non_singular_params)
-def test_rotation_matrices(vector, angle):
-    """
-    Test that $[B] . [B]^{-1} = [I_{3 \times 3}]$
-    """
-    rotation = PrincipalRotation(np.array(vector), angle)
-    # if the determinant is close to 1.0 the test passes
-    assert np.isclose(rotation.inverse_rotation_matrix @ rotation.rotation_matrix,
-                      np.eye(3)).all()
-
-
-@pytest.mark.parametrize('vector,angle', singluar_params)
-def test_singular_rotation_matrices(vector, angle):
-    """
-    Test that singular angles return a B matrix with some infinity values
-    """
-    rotation = PrincipalRotation(np.array(vector), angle)
-    # if `(angle % np.pi) == 0` the B matrix will contain some values as np.Inf
-    assert (rotation.rotation_matrix == np.Inf).any()

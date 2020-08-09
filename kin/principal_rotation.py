@@ -49,25 +49,13 @@ class PrincipalRotation:
 
     @property
     def rotation_matrix(self):
-        # TODO: This is not passing tests. Issue #
-        if self._rotation_matrix is None:
-            gamma = self.vector*self.angle
-            tilde_gamma = tilde(gamma)
-            cot_half_gamma = np.tan(np.pi/2 - self.angle/2)
-            self._rotation_matrix = np.eye(3) + 0.5*tilde_gamma + \
-                (1/self.angle**2)*(1 - self.angle*0.5*cot_half_gamma)*tilde_gamma**2
-        return self._rotation_matrix
+        raise NotImplementedError("Rotation matrix not implemented for " + \
+                                  "`PrincipalRotation`. Wait for issue #2")
 
     @property
     def inverse_rotation_matrix(self):
-        # TODO: This is not passing tests. Issue #
-        if self._inverse_rotation_matrix is None:
-            gamma = self.vector*self.angle
-            tilde_gamma = tilde(gamma)
-            self._inverse_rotation_matrix = np.eye(3) - \
-                ((1-np.cos(self.angle))/self.angle**2)*tilde_gamma + \
-                ((self.angle - np.sin(self.angle))/self.angle**3)*tilde_gamma**2
-        return self._inverse_rotation_matrix
+        raise NotImplementedError("Inverse rotation matrix not implemented for " + \
+                                  "`PrincipalRotation`. Wait for issue #2")
 
     def as_quaternion(self):
         scalar = np.cos(0.5*self.angle)
