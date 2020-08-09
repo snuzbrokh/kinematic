@@ -231,10 +231,6 @@ class EulerAngles:
             self._rotation_matrix = rotation_matrix
         return self._rotation_matrix
 
-    @staticmethod
-    def is_order_symmetric(order):
-        return order == order[::-1]
-
     @property
     def dcm(self):
         """
@@ -248,6 +244,10 @@ class EulerAngles:
                 dcm = dcm @ self._single_axis_rotations[axis](ang)
             self._dcm = dcm
         return self._dcm
+
+    @staticmethod
+    def is_order_symmetric(order):
+        return order == order[::-1]
 
     @classmethod
     def from_dcm(cls, dcm, order='zyx'):

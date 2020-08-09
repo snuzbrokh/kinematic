@@ -6,9 +6,10 @@ TODO: fix citation [1](HS)
 """
 
 import numpy as np
-from kin.helpers import tilde, round_radians
-import kin.quaternion
+
 import kin.mrp
+import kin.quaternion
+from kin.helpers import round_radians, tilde
 
 
 class PrincipalRotation:
@@ -24,31 +25,6 @@ class PrincipalRotation:
         self._dcm = None
         self._rotation_matrix = None
         self._inverse_rotation_matrix = None
-
-    @classmethod
-    def from_dcm(cls, dcm):
-        """
-        Compute principal rotation from dcm.
-        This has singularities on angle % np.pi == 0
-
-        It will always return the principal rotation angle as positive,
-        but regarding the fact that :math:`(\Phi, e) = (-\Phi, -e)` the rotation
-        is not affected.
-        """
-        # always return the short rotation for the angle
-        angle = np.arccos(0.5*(dcm[0][0]+dcm[1][1]+dcm[2][2]-1))
-
-        if np.isnan(angle) or np.isclose(angle, np.pi) or np.isclose(angle, 0.0):
-            raise ValueError("Mapping from DCM to Principal Rotation is not " + \
-                             f"uniquely defined for a rotation angle of {angle}.")
-
-        vector = np.array([
-            dcm[1][2]-dcm[2][1],
-            dcm[2][0]-dcm[0][2],
-            dcm[0][1]-dcm[1][0],
-        ])/(2*np.sin(angle))
-        rotation = cls(vector, angle)
-        return rotation
 
     @property
     def dcm(self):
@@ -73,7 +49,7 @@ class PrincipalRotation:
 
     @property
     def rotation_matrix(self):
-        # TODO: This is not passing tests
+        # TODO: This is not passing tests. Issue #
         if self._rotation_matrix is None:
             gamma = self.vector*self.angle
             tilde_gamma = tilde(gamma)
@@ -84,7 +60,7 @@ class PrincipalRotation:
 
     @property
     def inverse_rotation_matrix(self):
-        # TODO: This is not passing tests
+        # TODO: This is not passing tests. Issue #
         if self._inverse_rotation_matrix is None:
             gamma = self.vector*self.angle
             tilde_gamma = tilde(gamma)
@@ -114,6 +90,53 @@ class PrincipalRotation:
     def as_mrp(self):
         return kin.mrp.MRP(*(np.tan(self.angle/4)*self.vector))
 
+    def add(self, pr):
+        """
+        Return a `PrincipalRotation` instance that is the composite rotation of the
+        current principal rotation and the rotation determined by `pr`
+
+        :param pr: Rotation to be added to the current principal rotation instance.
+        :type pr: `PrincipalRotation` instance.
+        """
+        raise NotImplementedError("Method not implemented for PricnipalRotation. " + \
+                                  "See issue # ")
+
+    def subtract(self, pr):
+        """
+        Return a `PrincipalRotation` instance that is the decomposed rotation of the
+        current principal rotation and the rotation determined by `pr`
+
+        :param pr: Rotation to be subtracted to the current principal rotation instance.
+        :type pr: `PrincipalRotation` instance.
+        """
+        raise NotImplementedError("Method not implemented for PricnipalRotation. " + \
+                                  "See issue # ")
+
+    @classmethod
+    def from_dcm(cls, dcm):
+        """
+        Compute principal rotation from dcm.
+        This has singularities on angle % np.pi == 0
+
+        It will always return the principal rotation angle as positive,
+        but regarding the fact that :math:`(\Phi, e) = (-\Phi, -e)` the rotation
+        is not affected.
+        """
+        # always return the short rotation for the angle
+        angle = np.arccos(0.5*(dcm[0][0]+dcm[1][1]+dcm[2][2]-1))
+
+        if np.isnan(angle) or np.isclose(angle, np.pi) or np.isclose(angle, 0.0):
+            raise ValueError("Mapping from DCM to Principal Rotation is not " + \
+                             f"uniquely defined for a rotation angle of {angle}.")
+
+        vector = np.array([
+            dcm[1][2]-dcm[2][1],
+            dcm[2][0]-dcm[0][2],
+            dcm[0][1]-dcm[1][0],
+        ])/(2*np.sin(angle))
+        rotation = cls(vector, angle)
+        return rotation
+
     def __eq__(self, o):
         if not isinstance(o, PrincipalRotation):
             return False
@@ -134,5 +157,4 @@ class PrincipalRotation:
 
     def __repr__(self):
         return f"PrincipalRotation<angle={self.angle}, vector={self.vector}>"
-
 

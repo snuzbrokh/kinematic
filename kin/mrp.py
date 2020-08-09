@@ -13,11 +13,6 @@ class MRP:
         self._rotation_matrix = None
         self._inverse_rotation_matrix = None
 
-    def as_short_rotation(self):
-        norm = np.linalg.norm(self.vector)
-        if norm >= 1:
-            self.vector = -self.vector/norm**2
-
     @property
     def dcm(self):
         if self._dcm is None:
@@ -44,6 +39,11 @@ class MRP:
                 4/ (1 + norm_2)**2
         return self._inverse_rotation_matrix
 
+    def as_short_rotation(self):
+        norm = np.linalg.norm(self.vector)
+        if norm >= 1:
+            self.vector = -self.vector/norm**2
+
     def as_quaternion(self):
         """
         Returns a set of Euler Parametters from a set of Modified Rodirgues Parametters
@@ -51,6 +51,38 @@ class MRP:
         mrp_2 = self.vector @ self.vector
         b0 = (1-mrp_2) / (1+mrp_2)
         return kin.quaternion.Quaternion(b0, *(2*self.vector / (1 + mrp_2)))
+
+    def add(self, mrp):
+        """
+        Return a `MRP` instance that is the composite rotation of the
+        current orientation and the rotation determined by `mrp`
+
+        :param pr: Rotation to be added to the current `MRP` instance.
+        :type pr: `MRP` instance.
+        """
+        mrp1_2 = np.linalg.norm(mrp.vector)**2
+        mrp2_2 = np.linalg.norm(self.vector)**2
+
+        numerator = (1 - mrp1_2)*self.vector + (1 - mrp2_2)*mrp.vector - \
+            2 * np.cross(self.vector, mrp.vector)
+        denominator = 1 + mrp1_2 * mrp2_2 - 2 * np.dot(self.vector, mrp.vector)
+        return MRP(*(numerator/denominator))
+
+    def subtract(self, mrp):
+        """
+        Return a `MRP` instance that is the decomposed rotation of the
+        current orientation and the rotation determined by `mrp`
+
+        :param pr: Rotation to be subtracted to the current `MRP` instance.
+        :type pr: `MRP` instance.
+        """
+        mrp1_2 = np.linalg.norm(mrp.vector)**2
+        mrp2_2 = np.linalg.norm(self.vector)**2
+
+        numerator = (1 - mrp1_2)*self.vector - (1 - mrp2_2)*mrp.vector + \
+            2 * np.cross(self.vector, mrp.vector)
+        denominator = 1 + mrp1_2 * mrp2_2 + 2 * np.dot(self.vector, mrp.vector)
+        return MRP(*(numerator/denominator))
 
     @classmethod
     def from_dcm(cls, dcm):
@@ -88,27 +120,3 @@ class MRP:
         if not isinstance(o, MRP):
             raise ValueError(f"Can not subtract MRP and {o}")
         return MRP(*(self.vector - o.vector))
-
-    def add(self, mrp):
-        """
-        Adds two sets of Modified Rodirgues Parametters
-        """
-        mrp1_2 = np.linalg.norm(mrp.vector)**2
-        mrp2_2 = np.linalg.norm(self.vector)**2
-
-        numerator = (1 - mrp1_2)*self.vector + (1 - mrp2_2)*mrp.vector - \
-            2 * np.cross(self.vector, mrp.vector)
-        denominator = 1 + mrp1_2 * mrp2_2 - 2 * np.dot(self.vector, mrp.vector)
-        return MRP(*(numerator/denominator))
-
-    def subtract(self, mrp):
-        """
-        Subtracts two sets of Modified Rodirgues Parametters
-        """
-        mrp1_2 = np.linalg.norm(mrp.vector)**2
-        mrp2_2 = np.linalg.norm(self.vector)**2
-
-        numerator = (1 - mrp1_2)*self.vector - (1 - mrp2_2)*mrp.vector + \
-            2 * np.cross(self.vector, mrp.vector)
-        denominator = 1 + mrp1_2 * mrp2_2 + 2 * np.dot(self.vector, mrp.vector)
-        return MRP(*(numerator/denominator))

@@ -1,7 +1,8 @@
 import numpy as np
-import kin.principal_rotation
+
 import kin.crp
 import kin.mrp
+import kin.principal_rotation
 
 
 class Quaternion:

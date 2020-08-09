@@ -1,7 +1,7 @@
 import numpy as np
 
-from kin.quaternion import Quaternion
 from kin.principal_rotation import PrincipalRotation
+from kin.quaternion import Quaternion
 
 from .helpers import tilde
 
@@ -46,21 +46,29 @@ class CRP:
         vector = self.vector/norm
         return PrincipalRotation(vector, angle)
 
-    def add(self, q):
+    def add(self, crp):
         """
-        Adds two sets of Classic Rodirgues Parametters
-        """
-        q_cross = np.cross(self.vector, q.vector)
-        q_dot = self.vector @ q.vector
-        return CRP(*((self.vector + q.vector - q_cross) / (1 - q_dot)))
+        Return a `CRP` instance that is the composite rotation of the
+        current orientation and the rotation determined by `crp`
 
-    def subtract(self, q):
+        :param pr: Rotation to be added to the current `CRP` instance.
+        :type pr: `CRP` instance.
         """
-        Subtracts two sets of Classic Rodirgues Parametters
+        q_cross = np.cross(self.vector, crp.vector)
+        q_dot = self.vector @ crp.vector
+        return CRP(*((self.vector + crp.vector - q_cross) / (1 - q_dot)))
+
+    def subtract(self, crp):
         """
-        q_cross = np.cross(self.vector, q.vector)
-        q_dot = self.vector @ q.vector
-        return CRP(*((self.vector - q.vector + q_cross) / (1 + q_dot)))
+        Return a `CRP` instance that is the decomposed rotation of the
+        current orientation and the rotation determined by `crp`
+
+        :param pr: Rotation to be subtracted to the current `CRP` instance.
+        :type pr: `CRP` instance.
+        """
+        q_cross = np.cross(self.vector, crp.vector)
+        q_dot = self.vector @ crp.vector
+        return CRP(*((self.vector - crp.vector + q_cross) / (1 + q_dot)))
 
     @classmethod
     def from_dcm(cls, dcm):
